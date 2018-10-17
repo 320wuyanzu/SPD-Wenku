@@ -47,7 +47,7 @@ DOC_URLs = [
     #"https://wenku.baidu.com/view/605c2251a58da0116c1749fb.html?from=search",
     #"https://wenku.baidu.com/view/16e4308e64ce0508763231126edb6f1aff007187.html?from=search",
     #"https://wenku.baidu.com/view/718df9e80408763231126edb6f1aff00bed57031.html?from=search",
-    "https://wenku.baidu.com/view/0dba4967b5daa58da0116c175f0e7cd1842518b0.html?from=search",
+    #"https://wenku.baidu.com/view/0dba4967b5daa58da0116c175f0e7cd1842518b0.html?from=search",
     "https://wenku.baidu.com/view/202b4ae3d5bbfd0a7856730b.html?from=search",
     "https://wenku.baidu.com/view/631c04be65ce05087632136b.html?from=search",
     "https://wenku.baidu.com/view/90a5392b5901020207409c6a.html?sxts=1539747189936",
@@ -148,16 +148,22 @@ class WenKu(object):
     def PDFURL(self, index):
         uid = f'#pageNo-{index}'
         page = f'{uid} div.reader-pic-item'
-        page = self._browser.find_element_by_css_selector(page)
-        style = page.get_attribute('style')
-        styles = style.split(';')
-        for style in styles:
-            style = style.strip()
-            if style.startswith('background-image:'):
-                style = style.replace('background-image:','').strip()
-                self._page = style[5:-2]
-                self._doc_pages.append(style[5:-2])
-                return
+        try:
+            page = self._browser.find_element_by_css_selector(page)
+            style = page.get_attribute('style')
+            styles = style.split(';')
+            for style in styles:
+                style = style.strip()
+                if style.startswith('background-image:'):
+                    style = style.replace('background-image:','').strip()
+                    self._page = style[5:-2]
+                    self._doc_pages.append(style[5:-2])
+                    return
+        except EX.NoSuchElementException:
+            page = f'{uid} img.reader-pptstyle'
+            page = self._browser.find_element_by_css_selector(page)
+            self._page = page.get_attribute('src')
+            self._doc_pages.append(page.get_attribute('src'))
     
     def PDFDownload(self, save_name, url):
         data = self._Request(url)
